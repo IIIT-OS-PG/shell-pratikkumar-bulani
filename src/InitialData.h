@@ -30,6 +30,7 @@ void initializePath(){
 	PATH.copy(envPath, PATH.size());
 	envPath[PATH.size()] = '\0';
 	putenv(envPath);
+	close(myrcFD);
 }
 
 void initializeUser(){
@@ -71,12 +72,17 @@ void initialize(){
 	signal(SIGCHLD, sigchldHandler);
 	string command = "stty tostop";
 	commandExecution(command, 0, false);
+	command = "stty -icanon min 1 time 0";
+	commandExecution(command, 0, false);
+	command = "stty -echo";
+	commandExecution(command, 0, false);
 	ALIAS_MAP["$$"] = to_string(getpid());
 	ALIAS_MAP["$PATH"] = PATH;
 	ALIAS_MAP["$PWD"] = PWD;
 	ALIAS_MAP["$USER"] = USER;
 	ALIAS_MAP["$HOSTNAME"] = HOSTNAME;
 	ALIAS_MAP["$HOME"] = HOME;
+	ALIAS_MAP["$PS1"] = PS1_FORMAT;
 	ALIAS_MAP["~"] = HOME;
 }
 

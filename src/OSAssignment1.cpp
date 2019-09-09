@@ -1,39 +1,62 @@
-#include "NonCanonicalModeTerminal.h"
 #include "BinaryExecution.h"
 #include "InitialData.h"
+#include "History.h"
+#include "DestroyTerminal.h"
+#include "Trie.h"
 
 using namespace std;
 
 int main() {
-	//set_input_mode();
 	initialize();
-	string command = "";
-	char c[2] = {' ', '\0'};
+	string command, prefixCommand; char commandBuffer[100]; int indexBuffer;
+	char scannedCharacter;
 	int countPipes; bool background;
 	while(true){
-		countPipes = 0;
-		string prompt = createPS1();
+		countPipes = 0; string prompt = createPS1(); background = false; indexBuffer = 0; command = "", prefixCommand = "";
+		for(int i=0;i<100;i++) commandBuffer[i] = '\0';
+
 		write(STDOUT_FILENO, prompt.c_str(), prompt.size());
-		background = false;
-		read(STDIN_FILENO, c, 1);
-		while(c[0]!='\n'){
-			//cout<<int(c[0])<<endl;
-			//if(c[0] == 9) cout<<"tabpressed\n";
-			//else if(c[0] == 127) cout << '\b';
-			//write(STDOUT_FILENO, c, 1);
-			if(c[0] == '|') countPipes++;
-			if(c[0] == '&') background = true;
-			else command.append(c);
-			read(STDIN_FILENO, c, 1);
+
+		while(true){
+			read(STDIN_FILENO, &scannedCharacter, 1);
+			if(scannedCharacter == '\n'){
+				write(STDOUT_FILENO, &scannedCharacter, 1);
+				command = string(commandBuffer);
+				if(command.find("&") != string::npos){
+					command.replace(command.find("&"), 1, "");
+				}
+				boost::trim(command);
+				break;
+			} else if(scannedCharacter == 127){
+				if(indexBuffer > 0){
+					if(commandBuffer[indexBuffer] == '|') countPipes--;
+					else if(commandBuffer[indexBuffer] == '&') background = false;
+					write(STDOUT_FILENO, "\b \b", 3);
+					commandBuffer[indexBuffer--] = '\0';
+				}
+			} else if(scannedCharacter == 9){
+				write(STDOUT_FILENO, "\n", 1);
+				prefixCommand = string(commandBuffer);
+				vector<string> prefixes = findPrefixStrings(prefixCommand);
+				for(int i=0;i<prefixes.size();i++){
+					write(STDOUT_FILENO, prefixes[i].c_str(), prefixes[i].size());
+					write(STDOUT_FILENO, "\n", 1);
+				}
+				write(STDOUT_FILENO, prompt.c_str(), prompt.size());
+				write(STDOUT_FILENO, commandBuffer, indexBuffer);
+			} else {
+				commandBuffer[indexBuffer++] = scannedCharacter;
+				commandBuffer[indexBuffer] = '\0';
+				write(STDOUT_FILENO, &scannedCharacter, 1);
+				if(scannedCharacter == '|') countPipes++;
+				else if(scannedCharacter == '&') background = true;
+			}
 		}
-		//cout << "\n";
-		boost::trim(command);
-		if(command == "exit"){
-			break;
-		}
+		if(command == "exit") break;
+		addToHistory(command);
 		modifyCommand(command);
 		commandExecution(command, countPipes, background);
-		command = "";
 	}
+	destroy();
 	return 0;
 }

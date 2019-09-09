@@ -64,9 +64,9 @@ void commandExecution(string& command, int countPipes, bool background){
 		int childProcess = stoi(command.substr(3));
 		if( tcsetpgrp(0, childProcess) == -1) throw "Error: Fore ground";
 		kill(childProcess, SIGCONT);
-		//int status;
-		//wait(&status);
-		//ALIAS_MAP["$?"] = to_string(status);
+		int status;
+		wait(&status);
+		ALIAS_MAP["$?"] = to_string(status);
 		//if( tcsetpgrp(0, getpid()) == -1) throw "Error: Fore ground";
 		return;
 	} else if(command.substr(0, 5) == "alarm"){
