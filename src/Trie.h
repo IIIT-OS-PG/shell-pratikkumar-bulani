@@ -67,11 +67,14 @@ public:
 	Trie t;
 	Commands(){
 		t.insert("alias");
+		t.insert("adduser");
+		t.insert("cal");
 		t.insert("cat");
 		t.insert("cd");
 		t.insert("chmod");
 		t.insert("chown");
 		t.insert("curl");
+		t.insert("date");
 		t.insert("df");
 		t.insert("diff");
 		t.insert("echo");
@@ -84,6 +87,7 @@ public:
 		t.insert("gzip");
 		t.insert("head");
 		t.insert("history");
+		t.insert("hostname");
 		t.insert("kill");
 		t.insert("less");
 		t.insert("ls");

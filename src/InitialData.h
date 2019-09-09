@@ -18,6 +18,8 @@ using namespace std;
 
 string USER, PS1_FORMAT = "%1%@%2%:%3%%4% ", HOSTNAME, PATH, PWD, HOME;
 
+void sigcontHandler(int);
+
 void initializePath(){
 	PATH = "";
 	int myrcFD = open(MYRCPATH, O_RDONLY);
@@ -70,6 +72,7 @@ void initialize(){
 	signal(SIGALRM, alarmHandler);
 	signal(SIGINT, sigintHandler);
 	signal(SIGCHLD, sigchldHandler);
+	signal(SIGCONT, sigcontHandler);
 	string command = "stty tostop";
 	commandExecution(command, 0, false);
 	command = "stty -icanon min 1 time 0";
@@ -94,6 +97,10 @@ string createPS1(){
 
 	PS1 = (boost::format(PS1_FORMAT) % USER % HOSTNAME % PWD % ((USER=="root")?"#":"$")).str();
 	return PS1;
+}
+
+void sigcontHandler(int signalNo){
+	initialize();
 }
 
 #endif /* INITIALDATA_H_ */
